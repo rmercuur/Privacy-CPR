@@ -1,9 +1,10 @@
 globals[
-  privacy-global
+  global-privacy
 ]
 
 turtles-own[
-privacy-level
+  privacy
+  pleasure
 ]
 
 
@@ -17,25 +18,53 @@ to setup-turtles
   ask n-of amount-of-turtles patches
    [sprout 1]
   ask turtles[
-    set x 1]
+    set privacy random 100
+    set pleasure random 100
+  ]
 end
 
 
 to go
   turtles-act
   update-stats
+  update-layout
   tick
 end
 
 to turtles-act
-  privacy-or-benefit
+  privacy-or-pleasure
+  disaster
 end
 
-to privacy-or-benefit
-
+to privacy-or-pleasure
+  ask turtles [
+    ifelse pleasure < 50
+    [set pleasure pleasure + random 10 ;choose pleasure
+    ask turtles in-radius 10
+      [set privacy privacy - random 10]
+    ]
+    [set pleasure pleasure - random 5 ;choose privacy
+    ask turtles in-radius 10
+      [set privacy privacy + random 10]
+    ]
+  ]
 end
 
+to disaster
+  ask turtles [
+    if privacy < 50 [
+      if (random chance-on-disaster) < 1 [
+        set pleasure pleasure - 50 ;targeted by some problem
+      ]
+    ]
+  ]
+end
 to update-stats
+  set global-privacy sum [privacy] of turtles
+end
+
+to update-layout
+  ask turtles [set color scale-color black privacy 100 0] ;^privacy ~ ^ darkness
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -125,13 +154,69 @@ amount-of-turtles
 amount-of-turtles
 0
 100
-50.0
+20.0
 1
 1
 NIL
 HORIZONTAL
 
+PLOT
+748
+31
+948
+181
+average-privacy
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot global-privacy / count turtles"
+
+SLIDER
+32
+144
+255
+177
+chance-on-disaster
+chance-on-disaster
+0
+100
+1.0
+1
+1
+(1 out of x)
+HORIZONTAL
+
+PLOT
+750
+193
+950
+343
+average-pleasure
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot sum [pleasure] of turtles / count turtles"
+
 @#$#@#$#@
+## TO DO
+
+- problem is that right now its not rational to always ignore privacy, cause agents are not aware of the utilities... so doesnt show that you do it still
+- add some social influence model
+- add that your privacy is the sum of you and your neighbors privacy and change the acting function
 ## WHAT IS IT?
 
 (a general understanding of what the model is trying to show or explain)
@@ -473,7 +558,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.2
+NetLogo 6.0.4
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
